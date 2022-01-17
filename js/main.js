@@ -130,7 +130,7 @@ d3.json("data/data.json").then(function(data){
 
 function update(data){
 	// standard transition time for visualization
-	const t = d3.transition().duration(1000)
+	const t = d3.transition().duration(350)
 
 	//join new data with old elements.
 	const circles = g.selectAll("circle").data(data,d => d.country)
@@ -149,5 +149,4 @@ function update(data){
 
 	//update the time label
 	timeLabel.text(String(time+1800))
-
 }

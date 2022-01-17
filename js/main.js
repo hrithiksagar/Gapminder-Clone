@@ -74,3 +74,80 @@ const timeLabel = g.append("text")
 	.text("1800")
 console.log("9")
 console.log(timeLabel)
+
+//X Axis
+const xAxisCall =d3.axisBottom(x)
+	.tickValues([400,4000,40000])
+	.tickFormat(d3.format("$"));
+console.log("10")
+console.log(xAxisCall)
+g.append("g").attr("class","x axis").attr("transform",`translate(0, ${HEIGHT})`).call(xAxisCall)
+console.log("10")
+console.log(g)
+
+//Y Axis
+const yAxisCall = d3.axisLeft(y)
+console.log("11")
+console.log(yAxisCall)
+g.append("g")
+	.attr("class", "y axis")
+	.call(yAxisCall)
+console.log("12")
+console.log(yAxisCall)
+
+
+// pulling data
+d3.json("data/data.json").then(function(data){
+	// cleaning the data like empty rows or columns
+	const formattedData= data.map(year=>{
+		return year["countries"].filter(country => {
+			const dataExists = (country.income && country.life_exp)
+			//console.log("13")
+			//console.log(dataExists)
+			return dataExists
+		}).map(country => {
+			country.income = Number(country.income)
+			country.life_exp = Number(country.life_exp)
+			//console.log("14")
+			//console.log(country)
+			return country
+			
+		})
+	})
+	console.log("15")
+	console.log(formattedData)
+
+	//run the code every 0/1 second
+	d3.interval(function(){
+		//at the end of our data, loop back
+		time = (time<214) ? time+1 : 0 //if true returns left of ":" else returns right of ":" i.e 0
+		update(formattedData[time])
+	}, 100)
+	//first run of the visualization
+	update(formattedData[0])
+})
+
+
+function update(data){
+	// standard transition time for visualization
+	const t = d3.transition().duration(1000)
+
+	//join new data with old elements.
+	const circles = g.selectAll("circle").data(data,d => d.country)
+
+	// exit old elements not present in new data
+	circles.exit().remove()
+
+	//enter new elements present in new data
+	circles.enter().append('circle')
+		.attr("fill",d => continentColor(d.continent))
+		.merge(circles)
+		.transition(t)
+			.attr("cy",d =>y(d.life_exp))
+			.attr("cx",d => x(d.income))
+			.attr("r",d=>Math.sqrt(area(d.population)/Math.PI))
+
+	//update the time label
+	timeLabel.text(String(time+1800))
+
+}
